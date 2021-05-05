@@ -1,6 +1,9 @@
 import os
 import requests
 
+from dotenv import load_dotenv
+
+
 DIR_PATH = 'comics'
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
@@ -12,16 +15,19 @@ def fetch_spacex_last_launch(directory, xkcd_url, postfix_url):
     response = requests.get(full_url)
     response.raise_for_status()
     api_response = response.json()
-    image_url = api_response['img']
+    image_url = api_response
 
     with open(os.path.join(directory, f'xkcd_{comic_id}.png'), 'wb') as \
             file:
-        get_image = requests.get(image_url)
+        get_image = requests.get(image_url['img'])
+        print(image_url['alt'])
         get_image.raise_for_status()
         file.write(get_image.content)
 
 
 def main():
+    load_dotenv()
+    client_id = os.getenv('CLIENT_ID')
     os.makedirs(DIR_PATH, exist_ok=True)
     try:
         fetch_spacex_last_launch(DIR_PATH, XKCD_URL, POSTFIX_URL)
