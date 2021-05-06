@@ -3,7 +3,6 @@ import requests
 
 from dotenv import load_dotenv
 
-
 DIR_PATH = 'comics'
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
@@ -50,6 +49,24 @@ def upload_photo_to_server(dir_path, upload_url):
         return api_response
 
 
+def save_uploaded_photo(
+        access_token, vk_group_id, vk_api_url, image_server, image_hash, image_photo
+):
+    parameters = {
+        'access_token': access_token,
+        'group_id': vk_group_id,
+        'photo': image_photo,
+        'server': image_server,
+        'hash': image_hash,
+        'v': '5.130'
+    }
+    vk_api_method = 'photos.saveWallPhoto'
+    response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
+    response.raise_for_status()
+    api_response = response.json()
+    return api_response
+
+
 def main():
     load_dotenv()
     client_id = os.getenv('CLIENT_ID')
@@ -63,7 +80,17 @@ def main():
     upload_url = request_upload_url(access_token, vk_group_id, VK_API_URL)
     print(upload_url)
     upload_comics = upload_photo_to_server(DIR_PATH, upload_url)
-    print(upload_comics)
+    image_server = upload_comics['server']
+    image_hash = upload_comics['hash']
+    print('OOO: ' + image_hash)
+    image_photo = upload_comics['photo']
+    print(image_server, image_hash, image_photo)
+    confirmation = save_uploaded_photo(
+        access_token, vk_group_id, VK_API_URL, image_server, image_hash,
+        image_photo
+    )
+    print(confirmation)
+
 
 if __name__ == "__main__":
     main()
