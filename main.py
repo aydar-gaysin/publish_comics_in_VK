@@ -39,6 +39,17 @@ def request_upload_url(access_token, vk_group_id, vk_api_url):
     return get_upload_url
 
 
+def upload_photo_to_server(dir_path, upload_url):
+    with open(f'{dir_path}/xkcd_353.png', 'rb') as file:
+        files = {
+            'photo': file,
+        }
+        response = requests.post(upload_url, files=files)
+        response.raise_for_status()
+        api_response = response.json()
+        return api_response
+
+
 def main():
     load_dotenv()
     client_id = os.getenv('CLIENT_ID')
@@ -49,9 +60,10 @@ def main():
     #     fetch_spacex_last_launch(DIR_PATH, XKCD_URL, POSTFIX_URL)
     # except requests.exceptions.HTTPError as error:
     #     exit('Ошибка:\n{0}'.format(error))
-    response = request_upload_url(access_token, vk_group_id, VK_API_URL)
-    print(response)
-
+    upload_url = request_upload_url(access_token, vk_group_id, VK_API_URL)
+    print(upload_url)
+    upload_comics = upload_photo_to_server(DIR_PATH, upload_url)
+    print(upload_comics)
 
 if __name__ == "__main__":
     main()
