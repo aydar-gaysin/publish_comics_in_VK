@@ -103,24 +103,20 @@ def main():
     access_token = os.getenv('ACCESS_TOKEN')
     vk_group_id = os.getenv('GROUP_ID')
     random_comic_id = generate_random_comic_id(XKCD_URL, POSTFIX_URL)
-    print(random_comic_id)
     try:
         title = fetch_xkcd_comic(random_comic_id, XKCD_URL, POSTFIX_URL)
-        print(title)
     except requests.exceptions.HTTPError as error:
         exit('Ошибка:\n{0}'.format(error))
 
     if title:
         upload_url = request_upload_url(access_token, vk_group_id, VK_API_URL)
-
         upload_comics = upload_photo_to_server(random_comic_id, upload_url)
         image_server = upload_comics['server']
         image_hash = upload_comics['hash']
         image_photo = upload_comics['photo']
         get_save_response = save_uploaded_photo(
             access_token, vk_group_id, VK_API_URL, image_server, image_hash,
-            image_photo
-        )
+            image_photo)
         media_id = get_save_response['id']
         media_owner_id = get_save_response['owner_id']
         post_comic(access_token, vk_group_id, VK_API_URL, title, media_id,
