@@ -1,6 +1,6 @@
 # Публикация комиксов
 
-Read this in other languages: [English](https://github.com/aydar-gaysin/publish_comics_in_VK/blob/master/README.en.md)
+Read this in: [English](https://github.com/aydar-gaysin/publish_comics_in_VK/blob/master/README.en.md)
 
 Данная программа скачивает случайный комикс с комментарием автора с сайта https://xkcd.com/ и публикует его в вашем
 сообществе в социальной сети Вконтакте через API.
