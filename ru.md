@@ -15,7 +15,7 @@
    
 1. [Implicit Flow для получения ключа доступа пользователя](https://vk.com/dev/implicit_flow_user)
 
- [группа Вконтакте](https://vk.com/groups?tab=admin).
+
 ### Как установить
 
 У вас должен быть установлен Python3.
