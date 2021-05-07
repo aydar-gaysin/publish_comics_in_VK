@@ -1,13 +1,24 @@
 import os
-from pprint import pprint
+import random
 import requests
 
 from dotenv import load_dotenv
+
 
 DIR_PATH = 'comics'
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
 VK_API_URL = 'https://api.vk.com/method/'
+
+
+def generate_random_comic_id():
+    full_url = f'{xkcd_url}{postfix_url}'
+    response = requests.get(full_url)
+    response.raise_for_status()
+    api_response = response.json()
+    last_image_id = api_response['num']
+    random_id = random.randint(1,last_image_id)
+    return random_id
 
 
 def fetch_xkcd_comic(directory, xkcd_url, postfix_url):
@@ -108,14 +119,12 @@ def main():
         image_server = upload_comics['server']
         image_hash = upload_comics['hash']
         image_photo = upload_comics['photo']
-        print(image_photo)
         get_save_response = save_uploaded_photo(
             access_token, vk_group_id, VK_API_URL, image_server, image_hash,
             image_photo
         )
         media_id = get_save_response['id']
         media_owner_id = get_save_response['owner_id']
-        print(media_owner_id)
         post_comic(access_token, vk_group_id, VK_API_URL, title, media_id,
                    media_owner_id)
 
