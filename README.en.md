@@ -1,5 +1,7 @@
 # Comics publisher
 
+Read this in: [Русский](https://github.com/aydar-gaysin/publish_comics_in_VK/blob/master/README.md)
+
 This program downloads random comics with author's message from https://xkcd.com/ and publish it in your
 [VK](https://vk.com/) public through API.
 
