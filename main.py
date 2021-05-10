@@ -26,12 +26,11 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     response.raise_for_status()
     api_response = response.json()
     image_url = api_response
-
+    image_response = requests.get(image_url['img'])
+    message = image_url['alt']
+    image_response.raise_for_status()
     with open(f'xkcd_{random_comics_id}.png', 'wb') as file:
-        get_image = requests.get(image_url['img'])
-        message = image_url['alt']
-        get_image.raise_for_status()
-        file.write(get_image.content)
+        file.write(image_response.content)
     return message
 
 
@@ -44,8 +43,8 @@ def request_upload_url(access_token, vk_group_id, vk_api_url):
     vk_api_method = 'photos.getWallUploadServer'
     response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
     response.raise_for_status()
-    get_upload_url = response.json()['response']['upload_url']
-    return get_upload_url
+    upload_url = response.json()['response']['upload_url']
+    return upload_url
 
 
 def upload_photo_to_server(random_comics_id, upload_url):
@@ -55,8 +54,8 @@ def upload_photo_to_server(random_comics_id, upload_url):
         }
         response = requests.post(upload_url, files=files)
         response.raise_for_status()
-        api_response = response.json()
-        return api_response
+    api_response = response.json()
+    return api_response
 
 
 def save_uploaded_photo(
@@ -97,10 +96,6 @@ def post_comics(
     return api_response
 
 
-def delete_comics_file(random_comics_id):
-    os.remove(f'xkcd_{random_comics_id}.png')
-
-
 def main():
     load_dotenv()
     access_token = os.getenv('ACCESS_TOKEN')
@@ -108,24 +103,24 @@ def main():
     random_comics_id = generate_random_comics_id(XKCD_URL, POSTFIX_URL)
     try:
         title = fetch_xkcd_comics(random_comics_id, XKCD_URL, POSTFIX_URL)
-    except requests.exceptions.HTTPError as error:
-        exit('Ошибка:\n{0}'.format(error))
 
-    if title:
         upload_url = request_upload_url(access_token, vk_group_id, VK_API_URL)
         upload_comics = upload_photo_to_server(random_comics_id, upload_url)
         image_server = upload_comics['server']
         image_hash = upload_comics['hash']
         image_photo = upload_comics['photo']
-        get_save_response = save_uploaded_photo(
+        response = save_uploaded_photo(
             access_token, vk_group_id, VK_API_URL, image_server, image_hash,
             image_photo)
-        media_id = get_save_response['id']
-        media_owner_id = get_save_response['owner_id']
+        media_id = response['id']
+        media_owner_id = response['owner_id']
         post_comics(access_token, vk_group_id, VK_API_URL, title, media_id,
                     media_owner_id)
-        delete_comics_file(random_comics_id)
+    except requests.exceptions.HTTPError as error:
+        exit('Ошибка:\n{0}'.format(error))
+    finally:
+        os.remove(f'xkcd_{random_comics_id}.png')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
