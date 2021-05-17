@@ -30,7 +30,7 @@ pip install -r requirements.txt
 ```
 3. Создайте ```.env``` файл, укажите ACCESS TOKEN для взаимодействия с API VK, ID вашей группы Вконтакте:
 ```python
-ACCESS_TOKEN=
+VK_IMPLICIT_FLOW_TOKEN=
 GROUP_ID=
 ``` 
 4. Из командной строки запустите *main.py*:

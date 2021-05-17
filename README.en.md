@@ -29,7 +29,7 @@ pip install -r requirements.txt
 ```
 3. Create ```.env``` file, put ACCESS TOKEN , group_id into it:
 ```python
-ACCESS_TOKEN=
+VK_IMPLICIT_FLOW_TOKEN=
 GROUP_ID=
 ``` 
 4. From terminal start *main.py*:
