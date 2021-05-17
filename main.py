@@ -29,9 +29,10 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     image_response = requests.get(image_url['img'])
     message = image_url['alt']
     image_response.raise_for_status()
-    with open(f'xkcd_{random_comics_id}.png', 'wb') as file:
+    comics_file_name = f'xkcd_{random_comics_id}.png'
+    with open(comics_file_name, 'wb') as file:
         file.write(image_response.content)
-    return message
+    return message, comics_file_name
 
 
 def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
@@ -47,8 +48,8 @@ def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
     return upload_url
 
 
-def upload_photo_to_server(random_comics_id, upload_url):
-    with open(f'xkcd_{random_comics_id}.png', 'rb') as file:
+def upload_photo_to_server(comics_file_name, upload_url):
+    with open(comics_file_name, 'rb') as file:
         files = {
             'photo': file,
         }
@@ -103,12 +104,13 @@ def main():
     vk_group_id = os.getenv('GROUP_ID')
     random_comics_id = generate_random_comics_id(XKCD_URL, POSTFIX_URL)
     try:
-        title = fetch_xkcd_comics(random_comics_id, XKCD_URL, POSTFIX_URL)
-
+        title, comics_file_name = fetch_xkcd_comics(
+            random_comics_id, XKCD_URL, POSTFIX_URL
+        )
         upload_url = request_upload_url(
             vk_implicit_flow_token, vk_group_id, VK_API_URL
         )
-        upload_comics = upload_photo_to_server(random_comics_id, upload_url)
+        upload_comics = upload_photo_to_server(comics_file_name, upload_url)
         image_server = upload_comics['server']
         image_hash = upload_comics['hash']
         image_photo = upload_comics['photo']
@@ -122,7 +124,7 @@ def main():
     except requests.exceptions.HTTPError as error:
         exit('Ошибка:\n{0}'.format(error))
     finally:
-        os.remove(f'xkcd_{random_comics_id}.png')
+        os.remove(comics_file_name)
 
 
 if __name__ == '__main__':
