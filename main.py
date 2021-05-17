@@ -34,10 +34,10 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     return message
 
 
-def request_upload_url(access_token, vk_group_id, vk_api_url):
+def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
     parameters = {
         'group_id': vk_group_id,
-        'access_token': access_token,
+        'access_token': vk_implicit_flow_token,
         'v': '5.130'
     }
     vk_api_method = 'photos.getWallUploadServer'
@@ -59,11 +59,11 @@ def upload_photo_to_server(random_comics_id, upload_url):
 
 
 def save_uploaded_photo(
-        access_token, vk_group_id, vk_api_url, image_server, image_hash,
-        image_photo
+        vk_implicit_flow_token, vk_group_id, vk_api_url, image_server,
+        image_hash, image_photo
 ):
     parameters = {
-        'access_token': access_token,
+        'access_token': vk_implicit_flow_token,
         'group_id': vk_group_id,
         'photo': image_photo,
         'server': image_server,
@@ -78,10 +78,11 @@ def save_uploaded_photo(
 
 
 def post_comics(
-        access_token, vk_group_id, vk_api_url, title, media_id, media_owner_id
+        vk_implicit_flow_token, vk_group_id, vk_api_url, title, media_id,
+        media_owner_id
 ):
     parameters = {
-        'access_token': access_token,
+        'access_token': vk_implicit_flow_token,
         'owner_id': f'-{vk_group_id}',
         'attachments': f'photo{media_owner_id}_{media_id}',
         'from_group': 1,
@@ -98,24 +99,26 @@ def post_comics(
 
 def main():
     load_dotenv()
-    access_token = os.getenv('ACCESS_TOKEN')
+    vk_implicit_flow_token = os.getenv('VK_IMPLICIT_FLOW_TOKEN')
     vk_group_id = os.getenv('GROUP_ID')
     random_comics_id = generate_random_comics_id(XKCD_URL, POSTFIX_URL)
     try:
         title = fetch_xkcd_comics(random_comics_id, XKCD_URL, POSTFIX_URL)
 
-        upload_url = request_upload_url(access_token, vk_group_id, VK_API_URL)
+        upload_url = request_upload_url(
+            vk_implicit_flow_token, vk_group_id, VK_API_URL
+        )
         upload_comics = upload_photo_to_server(random_comics_id, upload_url)
         image_server = upload_comics['server']
         image_hash = upload_comics['hash']
         image_photo = upload_comics['photo']
         response = save_uploaded_photo(
-            access_token, vk_group_id, VK_API_URL, image_server, image_hash,
-            image_photo)
+            vk_implicit_flow_token, vk_group_id, VK_API_URL, image_server,
+            image_hash, image_photo)
         media_id = response['id']
         media_owner_id = response['owner_id']
-        post_comics(access_token, vk_group_id, VK_API_URL, title, media_id,
-                    media_owner_id)
+        post_comics(vk_implicit_flow_token, vk_group_id, VK_API_URL, title,
+                    media_id, media_owner_id)
     except requests.exceptions.HTTPError as error:
         exit('Ошибка:\n{0}'.format(error))
     finally:
