@@ -2,6 +2,7 @@ import os
 import random
 import requests
 
+from pprint import pprint
 from dotenv import load_dotenv
 
 
@@ -35,6 +36,14 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     return message, comics_file_name
 
 
+def check_api_response(response):
+    try:
+        response.json()
+        return True
+    except requests.exceptions.HTTPError as error:
+        exit('Ошибка:\n{0}'.format(error))
+
+
 def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
     parameters = {
         'group_id': vk_group_id,
@@ -44,8 +53,9 @@ def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
     vk_api_method = 'photos.getWallUploadServer'
     response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
     response.raise_for_status()
-    upload_url = response.json()['response']['upload_url']
-    return upload_url
+    if check_api_response(response):
+        upload_url = response.json()['response']['upload_url']
+        return upload_url
 
 
 def upload_photo_to_server(comics_file_name, upload_url):
@@ -55,8 +65,9 @@ def upload_photo_to_server(comics_file_name, upload_url):
         }
         response = requests.post(upload_url, files=files)
         response.raise_for_status()
-    api_response = response.json()
-    return api_response
+    if check_api_response(response):
+        api_response = response.json()
+        return api_response
 
 
 def save_uploaded_photo(
@@ -74,8 +85,9 @@ def save_uploaded_photo(
     vk_api_method = 'photos.saveWallPhoto'
     response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
     response.raise_for_status()
-    api_response = response.json()
-    return api_response['response'][0]
+    if check_api_response(response):
+        api_response = response.json()
+        return api_response['response'][0]
 
 
 def post_comics(
@@ -103,10 +115,10 @@ def main():
     vk_implicit_flow_token = os.getenv('VK_IMPLICIT_FLOW_TOKEN')
     vk_group_id = os.getenv('GROUP_ID')
     random_comics_id = generate_random_comics_id(XKCD_URL, POSTFIX_URL)
+    title, comics_file_name = fetch_xkcd_comics(
+        random_comics_id, XKCD_URL, POSTFIX_URL
+    )
     try:
-        title, comics_file_name = fetch_xkcd_comics(
-            random_comics_id, XKCD_URL, POSTFIX_URL
-        )
         upload_url = request_upload_url(
             vk_implicit_flow_token, vk_group_id, VK_API_URL
         )
