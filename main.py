@@ -2,7 +2,6 @@ import os
 import random
 import requests
 
-from pprint import pprint
 from dotenv import load_dotenv
 
 
@@ -106,8 +105,9 @@ def post_comics(
     vk_api_method = 'wall.post'
     response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
     response.raise_for_status()
-    api_response = response.json()
-    return api_response
+    if check_api_response(response):
+        api_response = response.json()
+        return api_response
 
 
 def main():
@@ -118,25 +118,21 @@ def main():
     title, comics_file_name = fetch_xkcd_comics(
         random_comics_id, XKCD_URL, POSTFIX_URL
     )
-    try:
-        upload_url = request_upload_url(
-            vk_implicit_flow_token, vk_group_id, VK_API_URL
-        )
-        upload_comics = upload_photo_to_server(comics_file_name, upload_url)
-        image_server = upload_comics['server']
-        image_hash = upload_comics['hash']
-        image_photo = upload_comics['photo']
-        response = save_uploaded_photo(
-            vk_implicit_flow_token, vk_group_id, VK_API_URL, image_server,
-            image_hash, image_photo)
-        media_id = response['id']
-        media_owner_id = response['owner_id']
-        post_comics(vk_implicit_flow_token, vk_group_id, VK_API_URL, title,
-                    media_id, media_owner_id)
-    except requests.exceptions.HTTPError as error:
-        exit('Ошибка:\n{0}'.format(error))
-    finally:
-        os.remove(comics_file_name)
+    upload_url = request_upload_url(
+        vk_implicit_flow_token, vk_group_id, VK_API_URL
+    )
+    upload_comics = upload_photo_to_server(comics_file_name, upload_url)
+    image_server = upload_comics['server']
+    image_hash = upload_comics['hash']
+    image_photo = upload_comics['photo']
+    response = save_uploaded_photo(
+        vk_implicit_flow_token, vk_group_id, VK_API_URL, image_server,
+        image_hash, image_photo)
+    media_id = response['id']
+    media_owner_id = response['owner_id']
+    post_comics(vk_implicit_flow_token, vk_group_id, VK_API_URL, title,
+                media_id, media_owner_id)
+    os.remove(comics_file_name)
 
 
 if __name__ == '__main__':
