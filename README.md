@@ -7,7 +7,11 @@ Read this in: [English](https://github.com/aydar-gaysin/publish_comics_in_VK/blo
 
 Для запуска программы потребуется указать:
 1) ID группы```(group_id)``` Вконтакте;
-2) Ключ доступа пользователя```(access token)``` API Вконтакте.
+2) Ключ доступа пользователя ```(access token)``` API Вконтакте с правами 
+   доступа:
+   ```
+   scope=photos,groups,walls,offline
+   ```
 
 ### Ссылки на полезные материалы
 
