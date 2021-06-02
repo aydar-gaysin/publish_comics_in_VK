@@ -7,7 +7,7 @@ This program downloads random comics with author's message from https://xkcd.com
 
 Before start, please, ensure that you possess the following data:
 1) VK Group ID```(group_id)```;
-2) VK API user's access key```(access token)``` with folowwing permissions:
+2) VK API user's access key```(access token)``` with following permissions:
    ```
    scope=photos,groups,walls,offline
    ```
