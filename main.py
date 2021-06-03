@@ -3,6 +3,7 @@ import random
 import requests
 
 from dotenv import load_dotenv
+from pprint import pprint
 
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
@@ -41,14 +42,11 @@ def check_api_response(vk_implicit_flow_token, vk_group_id, vk_api_url):
     }
     vk_api_method = 'utils.getServerTime'
     response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
-    response.raise_for_status()
     if response.json():
         return True
     else:
-        raise ValueError
-    #
-    # except requests.exceptions.HTTPError as error:
-    #     exit('Ошибка:\n{0}'.format(error))
+        print(f'Ошибка: {response.json()["error"]["error_msg"]}')
+        return False
 
 
 def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
