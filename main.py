@@ -42,6 +42,7 @@ def check_api_response(vk_implicit_flow_token, vk_group_id, vk_api_url):
     }
     vk_api_method = 'utils.getServerTime'
     response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
+    response.raise_for_status()
     if response.json():
         return True
     else:
