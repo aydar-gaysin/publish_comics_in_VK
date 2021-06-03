@@ -4,7 +4,6 @@ import requests
 
 from dotenv import load_dotenv
 
-
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
 VK_API_URL = 'https://api.vk.com/method/'
@@ -24,9 +23,9 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     full_url = f'{xkcd_url}{random_comics_id}{postfix_url}'
     response = requests.get(full_url)
     response.raise_for_status()
-    image_url = response.json()
-    image_response = requests.get(image_url['img'])
-    message = image_url['alt']
+    random_comic_response = response.json()
+    image_response = requests.get(random_comic_response['img'])
+    message = random_comic_response['alt']
     image_response.raise_for_status()
     comics_file_name = f'xkcd_{random_comics_id}.png'
     with open(comics_file_name, 'wb') as file:
