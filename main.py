@@ -33,12 +33,22 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     return message, comics_file_name
 
 
-def check_api_response(response):
-    try:
-        response.json()
+def check_api_response(vk_implicit_flow_token, vk_group_id, vk_api_url):
+    parameters = {
+        'group_id': vk_group_id,
+        'access_token': vk_implicit_flow_token,
+        'v': '5.130'
+    }
+    vk_api_method = 'utils.getServerTime'
+    response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
+    response.raise_for_status()
+    if response.json():
         return True
-    except requests.exceptions.HTTPError as error:
-        exit('Ошибка:\n{0}'.format(error))
+    else:
+        raise ValueError
+    #
+    # except requests.exceptions.HTTPError as error:
+    #     exit('Ошибка:\n{0}'.format(error))
 
 
 def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
@@ -49,10 +59,8 @@ def request_upload_url(vk_implicit_flow_token, vk_group_id, vk_api_url):
     }
     vk_api_method = 'photos.getWallUploadServer'
     response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
-    response.raise_for_status()
-    if check_api_response(response):
-        upload_url = response.json()['response']['upload_url']
-        return upload_url
+    upload_url = response.json()['response']['upload_url']
+    return upload_url
 
 
 def upload_photo_to_server(comics_file_name, upload_url):
@@ -61,10 +69,7 @@ def upload_photo_to_server(comics_file_name, upload_url):
             'photo': file,
         }
         response = requests.post(upload_url, files=files)
-        response.raise_for_status()
-    if check_api_response(response):
-        api_response = response.json()
-        return api_response
+    return response.json()
 
 
 def save_uploaded_photo(
@@ -81,10 +86,8 @@ def save_uploaded_photo(
     }
     vk_api_method = 'photos.saveWallPhoto'
     response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
-    response.raise_for_status()
-    if check_api_response(response):
-        api_response = response.json()
-        return api_response['response'][0]
+    api_response = response.json()
+    return api_response['response'][0]
 
 
 def post_comics(
@@ -103,36 +106,38 @@ def post_comics(
     vk_api_method = 'wall.post'
     response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
     response.raise_for_status()
-    if check_api_response(response):
-        api_response = response.json()
-        return api_response
+    return response.json()
 
 
 def main():
     load_dotenv()
     vk_implicit_flow_token = os.getenv('VK_IMPLICIT_FLOW_TOKEN')
     vk_group_id = os.getenv('GROUP_ID')
-    try:
-        random_comics_id = generate_random_comics_id(XKCD_URL, POSTFIX_URL)
-        title, comics_file_name = fetch_xkcd_comics(
-            random_comics_id, XKCD_URL, POSTFIX_URL
-        )
-        upload_url = request_upload_url(
-            vk_implicit_flow_token, vk_group_id, VK_API_URL
-        )
-        upload_comics = upload_photo_to_server(comics_file_name, upload_url)
-        image_server = upload_comics['server']
-        image_hash = upload_comics['hash']
-        image_photo = upload_comics['photo']
-        response = save_uploaded_photo(
-            vk_implicit_flow_token, vk_group_id, VK_API_URL, image_server,
-            image_hash, image_photo)
-        media_id = response['id']
-        media_owner_id = response['owner_id']
-        post_comics(vk_implicit_flow_token, vk_group_id, VK_API_URL, title,
-                    media_id, media_owner_id)
-    finally:
-        os.remove(comics_file_name)
+    random_comics_id = generate_random_comics_id(XKCD_URL, POSTFIX_URL)
+    vk_api_status_ok = check_api_response(
+        vk_implicit_flow_token, vk_group_id, VK_API_URL
+    )
+    if vk_api_status_ok:
+        try:
+            title, comics_file_name = fetch_xkcd_comics(
+                random_comics_id, XKCD_URL, POSTFIX_URL
+            )
+            upload_url = request_upload_url(
+                vk_implicit_flow_token, vk_group_id, VK_API_URL
+            )
+            upload_comics = upload_photo_to_server(comics_file_name, upload_url)
+            image_server = upload_comics['server']
+            image_hash = upload_comics['hash']
+            image_photo = upload_comics['photo']
+            response = save_uploaded_photo(
+                vk_implicit_flow_token, vk_group_id, VK_API_URL, image_server,
+                image_hash, image_photo)
+            media_id = response['id']
+            media_owner_id = response['owner_id']
+            post_comics(vk_implicit_flow_token, vk_group_id, VK_API_URL, title,
+                        media_id, media_owner_id)
+        finally:
+            os.remove(comics_file_name)
 
 
 if __name__ == '__main__':
