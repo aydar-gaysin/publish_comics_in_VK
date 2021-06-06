@@ -1,9 +1,9 @@
+import logging
 import os
 import random
 import requests
 
 from dotenv import load_dotenv
-from pprint import pprint
 
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
@@ -35,6 +35,7 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
 
 
 def check_api_response(vk_implicit_flow_token, vk_group_id, vk_api_url):
+    logging.basicConfig(format='{message}', level=logging.INFO, style='{')
     parameters = {
         'group_id': vk_group_id,
         'access_token': vk_implicit_flow_token,
@@ -43,10 +44,11 @@ def check_api_response(vk_implicit_flow_token, vk_group_id, vk_api_url):
     vk_api_method = 'utils.getServerTime'
     response = requests.get(f'{vk_api_url}{vk_api_method}', params=parameters)
     response.raise_for_status()
-    if response.json():
+    response_content = response.json()
+    if response_content:
         return True
-    else:
-        print(f'Ошибка: {response.json()["error"]["error_msg"]}')
+    elif response_content["error"]["error_msg"]:
+        logging.info(f'Ошибка: {response_content["error"]["error_msg"]}')
         return False
 
 
@@ -117,10 +119,10 @@ def main():
         vk_implicit_flow_token, vk_group_id, VK_API_URL
     )
     if vk_api_status_ok:
+        title, comics_file_name = fetch_xkcd_comics(
+            random_comics_id, XKCD_URL, POSTFIX_URL
+        )
         try:
-            title, comics_file_name = fetch_xkcd_comics(
-                random_comics_id, XKCD_URL, POSTFIX_URL
-            )
             upload_url = request_upload_url(
                 vk_implicit_flow_token, vk_group_id, VK_API_URL
             )
