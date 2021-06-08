@@ -60,7 +60,7 @@ def upload_photo_to_server(comics_file_name, upload_url):
             'photo': file,
         }
         response = requests.post(upload_url, files=files)
-    return response.json()
+    return check_api_response(response)
 
 
 def save_uploaded_photo(
@@ -77,8 +77,7 @@ def save_uploaded_photo(
     }
     vk_api_method = 'photos.saveWallPhoto'
     response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
-    api_response = response.json()
-    return api_response['response'][0]
+    return check_api_response(response)['response'][0]
 
 
 def post_comics(
@@ -96,8 +95,7 @@ def post_comics(
     }
     vk_api_method = 'wall.post'
     response = requests.post(f'{vk_api_url}{vk_api_method}', params=parameters)
-    response.raise_for_status()
-    return response.json()
+    return check_api_response(response)
 
 
 def main():
