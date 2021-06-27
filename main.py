@@ -11,7 +11,6 @@ VK_API_URL = 'https://api.vk.com/method/'
 
 
 def check_api_response(response):
-    logging.basicConfig(format='{message}', level=logging.INFO, style='{')
     response.raise_for_status()
     response_content = response.json()
     if response_content:
@@ -99,6 +98,7 @@ def post_comics(
 
 
 def main():
+    logging.basicConfig(format='{message}', level=logging.INFO, style='{')
     load_dotenv()
     vk_implicit_flow_token = os.getenv('VK_IMPLICIT_FLOW_TOKEN')
     vk_group_id = os.getenv('GROUP_ID')
