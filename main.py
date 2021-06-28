@@ -23,8 +23,8 @@ def check_api_response(response):
 def generate_random_comics_id(xkcd_url, postfix_url):
     full_url = f'{xkcd_url}{postfix_url}'
     response = requests.get(full_url)
-    api_response = check_api_response(response)
-    last_image_id = api_response['num']
+    response.raise_for_status()
+    last_image_id = response.json()['num']
     random_id = random.randint(1, last_image_id)
     return random_id
 
@@ -32,10 +32,12 @@ def generate_random_comics_id(xkcd_url, postfix_url):
 def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     full_url = f'{xkcd_url}{random_comics_id}{postfix_url}'
     response = requests.get(full_url)
-    random_comic_response = check_api_response(response)
+    response.raise_for_status()
+    random_comic_response = response.json()
     image_response = requests.get(random_comic_response['img'])
-    message = random_comic_response['alt']
     image_response.raise_for_status()
+    message = random_comic_response['alt']
+    message.raise_for_status()
     comics_file_name = f'xkcd_{random_comics_id}.png'
     with open(comics_file_name, 'wb') as file:
         file.write(image_response.content)
