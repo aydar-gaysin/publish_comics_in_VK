@@ -4,6 +4,7 @@ import random
 import requests
 
 from dotenv import load_dotenv
+from urllib.error import HTTPError
 
 XKCD_URL = 'https://xkcd.com/'
 POSTFIX_URL = '/info.0.json'
@@ -13,11 +14,12 @@ VK_API_URL = 'https://api.vk.com/method/'
 def check_api_response(response):
     response.raise_for_status()
     response_content = response.json()
-    if response_content:
-        return response_content
-    elif response_content["error"]["error_msg"]:
-        logging.info(f'Ошибка: {response_content["error"]["error_msg"]}')
-        return
+    response_names = ["response", "hash"]
+    for key in response_content:
+        if key in response_names:
+            return response_content
+        elif key == "error":
+            raise requests.HTTPError(response_content["error"]["error_msg"])
 
 
 def generate_random_comics_id(xkcd_url, postfix_url):
@@ -37,7 +39,6 @@ def fetch_xkcd_comics(random_comics_id, xkcd_url, postfix_url):
     image_response = requests.get(random_comic_response['img'])
     image_response.raise_for_status()
     message = random_comic_response['alt']
-    message.raise_for_status()
     comics_file_name = f'xkcd_{random_comics_id}.png'
     with open(comics_file_name, 'wb') as file:
         file.write(image_response.content)
@@ -123,6 +124,9 @@ def main():
         media_owner_id = response['owner_id']
         post_comics(vk_implicit_flow_token, vk_group_id, VK_API_URL, title,
                     media_id, media_owner_id)
+        logging.info('Done!')
+    except HTTPError:
+        return
     finally:
         os.remove(comics_file_name)
 
