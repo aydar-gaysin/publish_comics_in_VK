@@ -16,8 +16,7 @@ def check_api_response(response):
     response_content = response.json()
     if "error" in response_content:
         raise requests.HTTPError(response_content["error"]["error_msg"])
-    else:
-        return response_content
+    return response_content
 
 
 def generate_random_comics_id(xkcd_url, postfix_url):
