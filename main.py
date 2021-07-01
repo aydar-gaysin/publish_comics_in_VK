@@ -14,12 +14,10 @@ VK_API_URL = 'https://api.vk.com/method/'
 def check_api_response(response):
     response.raise_for_status()
     response_content = response.json()
-    response_names = ["response", "hash"]
-    for key in response_content:
-        if key in response_names:
-            return response_content
-        elif key == "error":
-            raise requests.HTTPError(response_content["error"]["error_msg"])
+    if "error" in response_content:
+        raise requests.HTTPError(response_content["error"]["error_msg"])
+    else:
+        return response_content
 
 
 def generate_random_comics_id(xkcd_url, postfix_url):
